@@ -12,6 +12,13 @@ export function createInitialState() {
         isAttracting: false,
         pendingGrowth: 0,
 
+        // Boost Energy System
+        boostEnergy: 100,
+        maxBoostEnergy: 100,
+        boostDrainRate: 0.05,
+        boostRechargeRate: 0.0025,
+        isSpacePressed: false,
+
         blackHoles: [],
 
         isFreeLook: false,

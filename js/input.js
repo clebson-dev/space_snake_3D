@@ -33,7 +33,7 @@ export function initInput(state, container) {
 
         if (e.code === 'Space') {
             e.preventDefault();
-            state.isBoosting = true;
+            state.isSpacePressed = true;
         }
 
         handleSteering(e.key, state);
@@ -43,7 +43,7 @@ export function initInput(state, container) {
         if (e.key === 'Shift') state.isFreeLook = false;
         if (e.code === 'Space') {
             e.preventDefault();
-            state.isBoosting = false;
+            state.isSpacePressed = false;
         }
     });
 }
@@ -89,22 +89,8 @@ function handleSteering(key, state) {
 export function updateMouseSteering(state, cameraObject) {
     if (!state.gameRunning || !state.isPointerLocked || state.isFreeLook) return;
 
-    // Use raw Yaw/Pitch to calculate Forward Vector (Decoupled from Visual Camera Lag)
-    // Formula:
-    // x = -sin(yaw) * cos(pitch)
-    // y = sin(pitch)
-    // z = -cos(yaw) * cos(pitch)
-
-    // Simplification for grid steering (Dominant Axis)
-    // We already have camera.yaw and camera.pitch in state.
-
     const yaw = state.camera.yaw;
     const pitch = state.camera.pitch;
-
-    // Fixed Coordinate System:
-    // Camera is at negative position looking at positive.
-    // So "Forward" is Positive Z.
-    // Invert the signs relative to previous calculation.
 
     const fX = Math.sin(yaw) * Math.cos(pitch);
     const fY = -Math.sin(pitch);

@@ -4,6 +4,7 @@ import { initInput, updateMouseSteering } from './js/input.js';
 import { updateLogic } from './js/logic.js';
 import { updateEffects, triggerWarpEffect, createExplosion, clearEffects } from './js/effects.js';
 import { GRID_SIZE } from './js/constants.js';
+import { initLocalization } from './js/localization.js';
 
 const container = document.getElementById('canvas-container');
 const scoreElement = document.getElementById('score');
@@ -23,6 +24,7 @@ const TIME_STEP = 100;
 
 initGraphics(container);
 initInput(state, container);
+initLocalization();
 
 function startGame() {
     clearEffects(state, scene);
@@ -41,6 +43,7 @@ function startGame() {
     state.gameSpeed = TIME_STEP;
     state.speedMultiplier = 1.0;
     state.isBoosting = false;
+    state.boostEnergy = state.maxBoostEnergy; // Reset boost energy
 
     state.rareFood = null;
     state.predictedPortals = { entry: null, exit: null };
@@ -126,10 +129,33 @@ function animate(currentTime) {
     const safeDelta = Math.min(deltaTime, 250);
     accumulator += safeDelta;
 
+    if (state.isSpacePressed) {
+        if (state.isBoosting) {
+            if (state.boostEnergy <= 0) {
+                state.isBoosting = false;
+                state.boostEnergy = 0;
+            }
+        } else {
+            if (state.boostEnergy > 5) {
+                state.isBoosting = true;
+            }
+        }
+    } else {
+        state.isBoosting = false;
+    }
+
     const boost = state.isBoosting ? 2.0 : 1.0;
     const currentStep = TIME_STEP / ((state.speedMultiplier || 1.0) * boost);
 
     while (accumulator >= currentStep) {
+        if (state.isBoosting) {
+            state.boostEnergy -= state.boostDrainRate * currentStep;
+            if (state.boostEnergy < 0) state.boostEnergy = 0;
+        } else {
+            state.boostEnergy += state.boostRechargeRate * currentStep;
+            if (state.boostEnergy > state.maxBoostEnergy) state.boostEnergy = state.maxBoostEnergy;
+        }
+
         updateMouseSteering(state, camera);
         const result = updateLogic(state);
 
@@ -167,8 +193,19 @@ function animate(currentTime) {
     const currentBoost = state.isBoosting ? 2.0 : 1.0;
     speedElement.textContent = Math.round((state.speedMultiplier || 1.0) * currentBoost * 100) + '%';
 
+    const boostFill = document.getElementById('boost-bar-fill');
+    if (boostFill) {
+        const pct = Math.max(0, Math.min(100, (state.boostEnergy / state.maxBoostEnergy) * 100));
+        boostFill.style.width = pct + '%';
+
+        if (state.boostEnergy < 20) {
+            boostFill.style.background = '#ff0000';
+        } else {
+            boostFill.style.background = 'linear-gradient(90deg, #ff0055, #bc13fe)';
+        }
+    }
+
     composer.render();
-    // renderer.render(scene, camera);
 }
 
 function showGameOver() {

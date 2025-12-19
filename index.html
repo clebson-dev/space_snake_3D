@@ -29,61 +29,81 @@
 
         <header>
             <h1>SPACE SNAKE 3D</h1>
-            <p class="subtitle">DIMENSIONAL DRIFTER</p>
+            <p class="subtitle" data-i18n="subtitle">DIMENSIONAL DRIFTER</p>
         </header>
 
         <div class="score-board">
             <div class="score-item">
-                <span class="label">SCORE</span>
+                <span class="label" data-i18n="score_label">SCORE</span>
                 <span id="score" class="value">0000</span>
             </div>
             <div class="score-item">
-                <span class="label">HIGH SCORE</span>
+                <span class="label" data-i18n="high_score_label">HIGH SCORE</span>
                 <span id="high-score" class="value">0000</span>
             </div>
             <div class="score-item">
-                <span class="label">SPEED</span>
+                <span class="label" data-i18n="speed_label">SPEED</span>
                 <span id="speed" class="value">100%</span>
+            </div>
+        </div>
+
+        <div class="boost-container">
+            <span class="label">BOOST</span>
+            <div class="boost-bar-bg">
+                <div id="boost-bar-fill" class="boost-bar-fill"></div>
             </div>
         </div>
     </div>
 
     <div id="start-screen" class="overlay">
-        <h2>READY PILOT?</h2>
+        <div class="lang-selector">
+            <button class="lang-btn" data-lang="pt">PT</button>
+            <button class="lang-btn" data-lang="en">EN</button>
+            <button class="lang-btn" data-lang="es">ES</button>
+        </div>
+        <h2 data-i18n="ready_pilot">READY PILOT?</h2>
 
         <div class="features-grid">
             <div class="info-box">
-                <h3>MISSION OBJECTIVES</h3>
+                <h3 data-i18n="mission_obj_title">MISSION OBJECTIVES</h3>
                 <ul class="rules-list">
-                    <li>Eat <span class="highlight-pink">PINK</span> energy to grow & speed up.</li>
-                    <li>Hunt rare <span class="highlight-golden">GOLDEN</span> energy for bonus.</li>
-                    <li>Catch <span class="highlight-green">GREEN</span> fruit before it vanishes!</li>
-                    <li>Avoid <span class="highlight-void">BLACK HOLES</span> - they consume all.</li>
+                    <li data-i18n="obj_pink">Eat <span class="highlight-pink"> PINK </span> energy to grow.
+                    </li>
+                    <li data-i18n="obj_golden">Hunt rare <span class="highlight-golden"> GOLDEN </span> energy for speed
+                        bonus.</li>
+                    <li data-i18n="obj_green">Seek <span class="highlight-green"> GREEN </span> fruit for huge growth!
+                    </li>
+                    <li data-i18n="obj_blackhole">Avoid <span class="highlight-void"> BLACK HOLES </span> - they consume
+                        all.</li>
                 </ul>
             </div>
 
             <div class="info-box">
-                <h3>FLIGHT CONTROLS</h3>
-                <div class="control-row"><span class="key-badge">MOUSE</span> <span>Steer Ship</span></div>
-                <div class="control-row"><span class="key-badge">SPACE</span> <span>Boost Speed</span></div>
-                <div class="control-row"><span class="key-badge">SHIFT</span> <span>Free Look</span></div>
-                <div class="control-row"><span class="key-badge">SCROLL</span> <span>Zoom Cam</span></div>
+                <h3 data-i18n="flight_controls_title">FLIGHT CONTROLS</h3>
+                <div class="control-row"><span class="key-badge">MOUSE</span> <span data-i18n="control_mouse">Steer
+                        Snake</span></div>
+                <div class="control-row"><span class="key-badge">SPACE</span> <span data-i18n="control_space">Boost
+                        Speed</span></div>
+                <div class="control-row"><span class="key-badge">SHIFT</span> <span data-i18n="control_shift">Free
+                        Look</span></div>
+                <div class="control-row"><span class="key-badge">SCROLL</span> <span data-i18n="control_scroll">Zoom
+                        Cam</span></div>
             </div>
         </div>
 
-        <button id="start-btn" class="glow-button">LAUNCH MISSION</button>
+        <button id="start-btn" class="glow-button" data-i18n="btn_launch">LAUNCH MISSION</button>
     </div>
 
     <div id="pause-screen" class="overlay hidden">
-        <h2>SYSTEM PAUSED</h2>
-        <button id="resume-btn" class="glow-button">RESUME MISSION</button>
-        <button id="pause-restart-btn" class="glow-button danger">ABORT & RESTART</button>
+        <h2 data-i18n="system_paused">SYSTEM PAUSED</h2>
+        <button id="resume-btn" class="glow-button" data-i18n="btn_resume">RESUME MISSION</button>
+        <button id="pause-restart-btn" class="glow-button danger" data-i18n="btn_abort">ABORT & RESTART</button>
     </div>
 
     <div id="game-over-screen" class="overlay hidden">
-        <h2 class="danger-text">CRITICAL FAILURE</h2>
-        <p>FINAL SCORE: <span id="final-score">0</span></p>
-        <button id="restart-btn" class="glow-button">RETRY MISSION</button>
+        <h2 class="danger-text" data-i18n="critical_failure">CRITICAL FAILURE</h2>
+        <p><span data-i18n="final_score_label">FINAL SCORE: </span><span id="final-score">0</span></p>
+        <button id="restart-btn" class="glow-button" data-i18n="btn_retry">RETRY MISSION</button>
     </div>
 
     <script src="main.js" type="module"></script>
