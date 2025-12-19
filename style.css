@@ -1,0 +1,245 @@
+:root {
+    --bg-color: #050510;
+    --grid-color: rgba(64, 224, 208, 0.1);
+    --primary-color: #00f3ff;
+    --secondary-color: #bc13fe;
+    --accent-color: #ff0055;
+    --text-color: #ffffff;
+    --font-heading: 'Orbitron', sans-serif;
+    --font-body: 'Rajdhani', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: var(--font-body);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        radial-gradient(circle at 50% 50%, rgba(20, 20, 40, 0), rgba(5, 5, 16, 1)),
+        radial-gradient(1px 1px at 10% 10%, white, transparent),
+        radial-gradient(1px 1px at 20% 30%, white, transparent),
+        radial-gradient(2px 2px at 40% 70%, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(1px 1px at 60% 40%, white, transparent),
+        radial-gradient(2px 2px at 80% 80%, rgba(200, 200, 255, 0.7), transparent),
+        radial-gradient(1px 1px at 90% 20%, white, transparent);
+    background-size: 100% 100%, 500px 500px, 400px 400px, 300px 300px, 600px 600px, 500px 500px, 450px 450px;
+    opacity: 0.6;
+    z-index: -1;
+}
+
+.ui-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+    z-index: 10;
+}
+
+header h1 {
+    font-family: var(--font-heading);
+    font-size: 3rem;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px rgba(0, 243, 255, 0.5);
+    margin-bottom: 0.2rem;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.7);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+}
+
+.game-wrapper {
+    position: relative;
+    padding: 2px;
+    background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+    border-radius: 4px;
+    box-shadow: 0 0 50px rgba(188, 19, 254, 0.4);
+}
+
+.score-board {
+    display: flex;
+    gap: 3rem;
+    padding: 10px;
+    border-radius: 8px;
+    z-index: 5;
+    margin: 0 auto;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(to bottom, rgba(5, 5, 16, 0.9) 0%, transparent 100%);
+}
+
+#score-container,
+#speed-container {
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 0 0 10px #00f3ff;
+    margin-bottom: 5px;
+}
+
+#canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+canvas {
+    display: block;
+    outline: none;
+}
+
+#start-screen,
+#game-over-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(5, 5, 16, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    transition: opacity 0.3s ease;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(5, 5, 16, 0.85);
+    backdrop-filter: blur(5px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    z-index: 20;
+    transition: opacity 0.3s ease;
+}
+
+.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.overlay h2 {
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    text-shadow: 0 0 10px var(--primary-color);
+}
+
+.overlay .danger-text {
+    color: var(--accent-color);
+    text-shadow: 0 0 10px var(--accent-color);
+}
+
+.overlay p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.glow-button {
+    background: transparent;
+    color: var(--primary-color);
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    padding: 12px 30px;
+    border: 2px solid var(--primary-color);
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+    margin-bottom: 20px;
+}
+
+.glow-button:hover {
+    background: var(--primary-color);
+    color: #000;
+    box-shadow: 0 0 30px rgba(0, 243, 255, 0.6);
+}
+
+.controls-hint {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    opacity: 0.5;
+}
+
+.key-row {
+    display: flex;
+    gap: 5px;
+}
+
+.key {
+    width: 30px;
+    height: 30px;
+    border: 1px solid white;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8rem;
+    color: white;
+}
+
+#flash-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1000;
+    transition: opacity 0.5s ease-out;
+}
+
+.flash-active {
+    opacity: 0.3 !important;
+}
