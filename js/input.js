@@ -31,11 +31,20 @@ export function initInput(state, container) {
 
         if (state.isFreeLook) return;
 
+        if (e.code === 'Space') {
+            e.preventDefault();
+            state.isBoosting = true;
+        }
+
         handleSteering(e.key, state);
     });
 
     document.addEventListener('keyup', (e) => {
         if (e.key === 'Shift') state.isFreeLook = false;
+        if (e.code === 'Space') {
+            e.preventDefault();
+            state.isBoosting = false;
+        }
     });
 }
 

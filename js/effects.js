@@ -50,7 +50,7 @@ export function updateEffects(state, scene) {
                 type: 'SHOCKWAVE'
             });
         } else if (e.type === 'PORTAL_SPAWN') {
-            createPortalEffect(e.pos, e.color, false, scene, state, e.dir, e.size, e.isCannibal);
+            createPortalEffect(e.pos, e.color, false, scene, state, e.orientation, e.size, e.isCannibal);
         }
     }
 
@@ -214,35 +214,42 @@ function checkPortalPrediction(state, scene) {
 
     let wrapEntry = null;
     let wrapExit = null;
+    let orientation = null; // 'x', 'y', or 'z'
 
     if (futureX < 0) {
         wrapEntry = { x: 0, y: head.y, z: head.z };
         wrapExit = { x: GRID_SIZE, y: head.y, z: head.z };
+        orientation = 'x';
     } else if (futureX >= GRID_SIZE) {
         wrapEntry = { x: GRID_SIZE, y: head.y, z: head.z };
         wrapExit = { x: 0, y: head.y, z: head.z };
+        orientation = 'x';
     }
 
     else if (futureY < 0) {
         wrapEntry = { x: head.x, y: 0, z: head.z };
         wrapExit = { x: head.x, y: GRID_SIZE, z: head.z };
+        orientation = 'y';
     } else if (futureY >= GRID_SIZE) {
         wrapEntry = { x: head.x, y: GRID_SIZE, z: head.z };
         wrapExit = { x: head.x, y: 0, z: head.z };
+        orientation = 'y';
     }
 
     else if (futureZ < 0) {
         wrapEntry = { x: head.x, y: head.y, z: 0 };
         wrapExit = { x: head.x, y: head.y, z: GRID_SIZE };
+        orientation = 'z';
     } else if (futureZ >= GRID_SIZE) {
         wrapEntry = { x: head.x, y: head.y, z: GRID_SIZE };
         wrapExit = { x: head.x, y: head.y, z: 0 };
+        orientation = 'z';
     }
 
     if (wrapEntry) {
         if (!state.predictedPortals.entry) {
-            state.predictedPortals.entry = createPortalEffect(wrapEntry, 0xff0055, true, scene, state, vel);
-            state.predictedPortals.exit = createPortalEffect(wrapExit, 0x00f3ff, true, scene, state, vel);
+            state.predictedPortals.entry = createPortalEffect(wrapEntry, 0xff0055, true, scene, state, orientation);
+            state.predictedPortals.exit = createPortalEffect(wrapExit, 0x00f3ff, true, scene, state, orientation);
         } else {
             const entryMesh = state.predictedPortals.entry.mesh;
             const exitMesh = state.predictedPortals.exit.mesh;
@@ -250,8 +257,8 @@ function checkPortalPrediction(state, scene) {
             entryMesh.position.set(wrapEntry.x * TILE_SIZE, wrapEntry.y * TILE_SIZE, wrapEntry.z * TILE_SIZE);
             exitMesh.position.set(wrapExit.x * TILE_SIZE, wrapExit.y * TILE_SIZE, wrapExit.z * TILE_SIZE);
 
-            updatePortalOrientation(entryMesh, vel);
-            updatePortalOrientation(exitMesh, vel);
+            updatePortalOrientation(entryMesh, orientation);
+            updatePortalOrientation(exitMesh, orientation);
         }
     } else {
         if (state.predictedPortals.entry) {
@@ -268,18 +275,18 @@ function checkPortalPrediction(state, scene) {
     }
 }
 
-function updatePortalOrientation(mesh, vel) {
+function updatePortalOrientation(mesh, orientation) {
     mesh.rotation.set(0, 0, 0);
 
-    if (vel.x !== 0) {
-        mesh.rotation.x = Math.PI / 2;
-    } else if (vel.y !== 0) {
+    if (orientation === 'x') {
         mesh.rotation.y = Math.PI / 2;
-    } else if (vel.z !== 0) {
+    } else if (orientation === 'y') {
+        mesh.rotation.x = Math.PI / 2;
     }
+    // If 'z', default no rotation (facing Z) is correct for direct XY ring
 }
 
-function createPortalEffect(pos, color, predictive, scene, state, vel, sizeMultiplier = 1.0, isCannibal = false) {
+function createPortalEffect(pos, color, predictive, scene, state, orientation, sizeMultiplier = 1.0, isCannibal = false) {
     const baseScale = predictive ? 1.0 : 2.5;
     const finalScale = baseScale * sizeMultiplier;
 
@@ -297,7 +304,7 @@ function createPortalEffect(pos, color, predictive, scene, state, vel, sizeMulti
 
     mesh.position.set(pos.x * TILE_SIZE, pos.y * TILE_SIZE, pos.z * TILE_SIZE);
 
-    updatePortalOrientation(mesh, vel);
+    updatePortalOrientation(mesh, orientation);
 
     scene.add(mesh);
 

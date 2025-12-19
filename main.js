@@ -40,6 +40,7 @@ function startGame() {
     state.pendingGrowth = 0;
     state.gameSpeed = TIME_STEP;
     state.speedMultiplier = 1.0;
+    state.isBoosting = false;
 
     state.rareFood = null;
     state.predictedPortals = { entry: null, exit: null };
@@ -69,6 +70,10 @@ function startGame() {
     startScreen.classList.add('hidden');
     gameOverScreen.classList.add('hidden');
     pauseScreen.classList.add('hidden');
+
+    startBtn.blur();
+    restartBtn.blur();
+    pauseRestartBtn.blur();
 
     lastTime = performance.now();
     accumulator = 0;
@@ -121,7 +126,8 @@ function animate(currentTime) {
     const safeDelta = Math.min(deltaTime, 250);
     accumulator += safeDelta;
 
-    const currentStep = TIME_STEP / (state.speedMultiplier || 1.0);
+    const boost = state.isBoosting ? 2.0 : 1.0;
+    const currentStep = TIME_STEP / ((state.speedMultiplier || 1.0) * boost);
 
     while (accumulator >= currentStep) {
         updateMouseSteering(state, camera);
@@ -158,9 +164,11 @@ function animate(currentTime) {
     syncVisuals(state, alpha);
 
     scoreElement.textContent = state.score.toString().padStart(4, '0');
-    speedElement.textContent = Math.round((state.speedMultiplier || 1.0) * 100) + '%';
+    const currentBoost = state.isBoosting ? 2.0 : 1.0;
+    speedElement.textContent = Math.round((state.speedMultiplier || 1.0) * currentBoost * 100) + '%';
 
     composer.render();
+    // renderer.render(scene, camera);
 }
 
 function showGameOver() {

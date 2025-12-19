@@ -29,12 +29,36 @@ export function updateLogic(state) {
         z: state.snake[0].z + state.velocity.z
     };
 
-    if (head.x < 0) head.x = GRID_SIZE - 1;
-    if (head.x >= GRID_SIZE) head.x = 0;
-    if (head.y < 0) head.y = GRID_SIZE - 1;
-    if (head.y >= GRID_SIZE) head.y = 0;
-    if (head.z < 0) head.z = GRID_SIZE - 1;
-    if (head.z >= GRID_SIZE) head.z = 0;
+    if (head.x < 0) {
+        head.x = GRID_SIZE - 1;
+        state.events.push({ type: 'PORTAL_SPAWN', pos: { x: 0, y: head.y, z: head.z }, orientation: 'x', color: 0x00f3ff, size: 1.0 });
+        state.events.push({ type: 'PORTAL_SPAWN', pos: { x: GRID_SIZE, y: head.y, z: head.z }, orientation: 'x', color: 0xff0055, size: 1.0 });
+    }
+    if (head.x >= GRID_SIZE) {
+        head.x = 0;
+        state.events.push({ type: 'PORTAL_SPAWN', pos: { x: GRID_SIZE, y: head.y, z: head.z }, orientation: 'x', color: 0x00f3ff, size: 1.0 });
+        state.events.push({ type: 'PORTAL_SPAWN', pos: { x: 0, y: head.y, z: head.z }, orientation: 'x', color: 0xff0055, size: 1.0 });
+    }
+    if (head.y < 0) {
+        head.y = GRID_SIZE - 1;
+        state.events.push({ type: 'PORTAL_SPAWN', pos: { x: head.x, y: 0, z: head.z }, orientation: 'y', color: 0x00f3ff, size: 1.0 });
+        state.events.push({ type: 'PORTAL_SPAWN', pos: { x: head.x, y: GRID_SIZE, z: head.z }, orientation: 'y', color: 0xff0055, size: 1.0 });
+    }
+    if (head.y >= GRID_SIZE) {
+        head.y = 0;
+        state.events.push({ type: 'PORTAL_SPAWN', pos: { x: head.x, y: GRID_SIZE, z: head.z }, orientation: 'y', color: 0x00f3ff, size: 1.0 });
+        state.events.push({ type: 'PORTAL_SPAWN', pos: { x: head.x, y: 0, z: head.z }, orientation: 'y', color: 0xff0055, size: 1.0 });
+    }
+    if (head.z < 0) {
+        head.z = GRID_SIZE - 1;
+        state.events.push({ type: 'PORTAL_SPAWN', pos: { x: head.x, y: head.y, z: 0 }, orientation: 'z', color: 0x00f3ff, size: 1.0 });
+        state.events.push({ type: 'PORTAL_SPAWN', pos: { x: head.x, y: head.y, z: GRID_SIZE }, orientation: 'z', color: 0xff0055, size: 1.0 });
+    }
+    if (head.z >= GRID_SIZE) {
+        head.z = 0;
+        state.events.push({ type: 'PORTAL_SPAWN', pos: { x: head.x, y: head.y, z: GRID_SIZE }, orientation: 'z', color: 0x00f3ff, size: 1.0 });
+        state.events.push({ type: 'PORTAL_SPAWN', pos: { x: head.x, y: head.y, z: 0 }, orientation: 'z', color: 0xff0055, size: 1.0 });
+    }
 
     if (Math.abs(head.x - state.snake[0].x) > 1 ||
         Math.abs(head.y - state.snake[0].y) > 1 ||
@@ -185,35 +209,35 @@ export function updateLogic(state) {
 
                 if (gf.x < 0) {
                     gf.x = GRID_SIZE - 1;
-                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: 0, y: gf.y, z: gf.z }, dir: gf.moveDir, color: 0x00ff00 });
-                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: GRID_SIZE, y: gf.y, z: gf.z }, dir: gf.moveDir, color: 0x00ff00 });
+                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: 0, y: gf.y, z: gf.z }, orientation: 'x', color: 0x00ff00 });
+                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: GRID_SIZE, y: gf.y, z: gf.z }, orientation: 'x', color: 0x00ff00 });
                 }
                 else if (gf.x >= GRID_SIZE) {
                     gf.x = 0;
-                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: GRID_SIZE, y: gf.y, z: gf.z }, dir: gf.moveDir, color: 0x00ff00 });
-                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: 0, y: gf.y, z: gf.z }, dir: gf.moveDir, color: 0x00ff00 });
+                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: GRID_SIZE, y: gf.y, z: gf.z }, orientation: 'x', color: 0x00ff00 });
+                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: 0, y: gf.y, z: gf.z }, orientation: 'x', color: 0x00ff00 });
                 }
 
                 if (gf.y < 0) {
                     gf.y = GRID_SIZE - 1;
-                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: gf.x, y: 0, z: gf.z }, dir: gf.moveDir, color: 0x00ff00 });
-                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: gf.x, y: GRID_SIZE, z: gf.z }, dir: gf.moveDir, color: 0x00ff00 });
+                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: gf.x, y: 0, z: gf.z }, orientation: 'y', color: 0x00ff00 });
+                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: gf.x, y: GRID_SIZE, z: gf.z }, orientation: 'y', color: 0x00ff00 });
                 }
                 else if (gf.y >= GRID_SIZE) {
                     gf.y = 0;
-                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: gf.x, y: GRID_SIZE, z: gf.z }, dir: gf.moveDir, color: 0x00ff00 });
-                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: gf.x, y: 0, z: gf.z }, dir: gf.moveDir, color: 0x00ff00 });
+                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: gf.x, y: GRID_SIZE, z: gf.z }, orientation: 'y', color: 0x00ff00 });
+                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: gf.x, y: 0, z: gf.z }, orientation: 'y', color: 0x00ff00 });
                 }
 
                 if (gf.z < 0) {
                     gf.z = GRID_SIZE - 1;
-                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: gf.x, y: gf.y, z: 0 }, dir: gf.moveDir, color: 0x00ff00 });
-                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: gf.x, y: gf.y, z: GRID_SIZE }, dir: gf.moveDir, color: 0x00ff00 });
+                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: gf.x, y: gf.y, z: 0 }, orientation: 'z', color: 0x00ff00 });
+                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: gf.x, y: gf.y, z: GRID_SIZE }, orientation: 'z', color: 0x00ff00 });
                 }
                 else if (gf.z >= GRID_SIZE) {
                     gf.z = 0;
-                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: gf.x, y: gf.y, z: GRID_SIZE }, dir: gf.moveDir, color: 0x00ff00 });
-                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: gf.x, y: gf.y, z: 0 }, dir: gf.moveDir, color: 0x00ff00 });
+                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: gf.x, y: gf.y, z: GRID_SIZE }, orientation: 'z', color: 0x00ff00 });
+                    state.events.push({ type: 'PORTAL_SPAWN', pos: { x: gf.x, y: gf.y, z: 0 }, orientation: 'z', color: 0x00ff00 });
                 }
             }
 
@@ -465,37 +489,37 @@ function updateBlackHoles(state) {
         if (bh.x < 0) {
             bh.x += GRID_SIZE;
             const color = bh.isCannibal ? 0xFFD700 : 0xFFFFFF;
-            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: 0, y: bh.y, z: bh.z }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
-            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: GRID_SIZE, y: bh.y, z: bh.z }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: 0, y: bh.y, z: bh.z }, orientation: 'x', color: color, isCannibal: bh.isCannibal, size: bh.size });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: GRID_SIZE, y: bh.y, z: bh.z }, orientation: 'x', color: color, isCannibal: bh.isCannibal, size: bh.size });
         } else if (bh.x >= GRID_SIZE) {
             bh.x -= GRID_SIZE;
             const color = bh.isCannibal ? 0xFFD700 : 0xFFFFFF;
-            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: GRID_SIZE, y: bh.y, z: bh.z }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
-            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: 0, y: bh.y, z: bh.z }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: GRID_SIZE, y: bh.y, z: bh.z }, orientation: 'x', color: color, isCannibal: bh.isCannibal, size: bh.size });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: 0, y: bh.y, z: bh.z }, orientation: 'x', color: color, isCannibal: bh.isCannibal, size: bh.size });
         }
 
         if (bh.y < 0) {
             bh.y += GRID_SIZE;
             const color = bh.isCannibal ? 0xFFD700 : 0xFFFFFF;
-            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: 0, z: bh.z }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
-            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: GRID_SIZE, z: bh.z }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: 0, z: bh.z }, orientation: 'y', color: color, isCannibal: bh.isCannibal, size: bh.size });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: GRID_SIZE, z: bh.z }, orientation: 'y', color: color, isCannibal: bh.isCannibal, size: bh.size });
         } else if (bh.y >= GRID_SIZE) {
             bh.y -= GRID_SIZE;
             const color = bh.isCannibal ? 0xFFD700 : 0xFFFFFF;
-            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: GRID_SIZE, z: bh.z }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
-            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: 0, z: bh.z }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: GRID_SIZE, z: bh.z }, orientation: 'y', color: color, isCannibal: bh.isCannibal, size: bh.size });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: 0, z: bh.z }, orientation: 'y', color: color, isCannibal: bh.isCannibal, size: bh.size });
         }
 
         if (bh.z < 0) {
             bh.z += GRID_SIZE;
             const color = bh.isCannibal ? 0xFFD700 : 0xFFFFFF;
-            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: bh.y, z: 0 }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
-            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: bh.y, z: GRID_SIZE }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: bh.y, z: 0 }, orientation: 'z', color: color, isCannibal: bh.isCannibal, size: bh.size });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: bh.y, z: GRID_SIZE }, orientation: 'z', color: color, isCannibal: bh.isCannibal, size: bh.size });
         } else if (bh.z >= GRID_SIZE) {
             bh.z -= GRID_SIZE;
             const color = bh.isCannibal ? 0xFFD700 : 0xFFFFFF;
-            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: bh.y, z: GRID_SIZE }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
-            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: bh.y, z: 0 }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: bh.y, z: GRID_SIZE }, orientation: 'z', color: color, isCannibal: bh.isCannibal, size: bh.size });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: bh.y, z: 0 }, orientation: 'z', color: color, isCannibal: bh.isCannibal, size: bh.size });
         }
 
         const eatRadius = baseEatRadius * bh.size;
@@ -724,6 +748,18 @@ function updateBlackHoles(state) {
                     const dist = Math.sqrt(distSq);
                     const force = 40.0 / (dist + 5.0);
                     seg.x += (dx / dist) * force * 2.0; seg.y += (dy / dist) * force * 2.0; seg.z += (dz / dist) * force * 2.0;
+
+                    // Apply Damage
+                    if (dist < 40 && state.snake.length > 5) {
+                        if (Math.random() < 0.3) {
+                            state.snake.pop();
+                            state.camera.shake = 10;
+                            state.events.push({ type: 'EXPLOSION', x: seg.x, y: seg.y, z: seg.z, color: 0xff0000, size: 0.5 });
+                        }
+                    } else if (dist < 15) {
+                        state.gameOver = true;
+                        state.crashPos = { x: bh.x, y: bh.y, z: bh.z };
+                    }
                 }
             });
         }
