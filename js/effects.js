@@ -214,7 +214,7 @@ function checkPortalPrediction(state, scene) {
 
     let wrapEntry = null;
     let wrapExit = null;
-    let orientation = null; // 'x', 'y', or 'z'
+    let orientation = null;
 
     if (futureX < 0) {
         wrapEntry = { x: 0, y: head.y, z: head.z };
@@ -283,7 +283,6 @@ function updatePortalOrientation(mesh, orientation) {
     } else if (orientation === 'y') {
         mesh.rotation.x = Math.PI / 2;
     }
-    // If 'z', default no rotation (facing Z) is correct for direct XY ring
 }
 
 function createPortalEffect(pos, color, predictive, scene, state, orientation, sizeMultiplier = 1.0, isCannibal = false) {

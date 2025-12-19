@@ -21,7 +21,8 @@ export const translations = {
         btn_abort: 'ABORTAR & REINICIAR',
         critical_failure: 'FALHA CRÍTICA',
         final_score_label: 'PONTUAÇÃO FINAL: ',
-        btn_retry: 'TENTAR NOVAMENTE'
+        btn_retry: 'TENTAR NOVAMENTE',
+        btn_exit_menu: 'SAIR PARA O MENU'
     },
     en: {
         subtitle: 'DIMENSIONAL DRIFTER',
@@ -45,7 +46,8 @@ export const translations = {
         btn_abort: 'ABORT & RESTART',
         critical_failure: 'CRITICAL FAILURE',
         final_score_label: 'FINAL SCORE: ',
-        btn_retry: 'RETRY MISSION'
+        btn_retry: 'RETRY MISSION',
+        btn_exit_menu: 'EXIT TO MENU'
     },
     es: {
         subtitle: 'VIAJERO DIMENSIONAL',
@@ -69,7 +71,8 @@ export const translations = {
         btn_abort: 'ABORTAR Y REINICIAR',
         critical_failure: 'FALLO CRÍTICO',
         final_score_label: 'PUNTUACIÓN FINAL: ',
-        btn_retry: 'REINTENTAR MISIÓN'
+        btn_retry: 'REINTENTAR MISIÓN',
+        btn_exit_menu: 'SALIR AL MENÚ'
     }
 };
 

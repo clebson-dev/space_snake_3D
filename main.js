@@ -15,6 +15,8 @@ const startBtn = document.getElementById('start-btn');
 const restartBtn = document.getElementById('restart-btn');
 const resumeBtn = document.getElementById('resume-btn');
 const pauseRestartBtn = document.getElementById('pause-restart-btn');
+const pauseExitBtn = document.getElementById('pause-exit-btn');
+const gameoverExitBtn = document.getElementById('gameover-exit-btn');
 const pauseScreen = document.getElementById('pause-screen');
 
 let state = createInitialState();
@@ -43,8 +45,7 @@ function startGame() {
     state.gameSpeed = TIME_STEP;
     state.speedMultiplier = 1.0;
     state.isBoosting = false;
-    state.boostEnergy = state.maxBoostEnergy; // Reset boost energy
-
+    state.boostEnergy = state.maxBoostEnergy;
     state.rareFood = null;
     state.predictedPortals = { entry: null, exit: null };
 
@@ -91,9 +92,19 @@ startBtn.addEventListener('click', startGame);
 restartBtn.addEventListener('click', startGame);
 resumeBtn.addEventListener('click', togglePause);
 pauseRestartBtn.addEventListener('click', startGame);
+if (pauseExitBtn) pauseExitBtn.addEventListener('click', exitToMenu);
+if (gameoverExitBtn) gameoverExitBtn.addEventListener('click', exitToMenu);
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
+        if (state.gameRunning && !state.gameOver) {
+            togglePause();
+        }
+    }
+});
 
 function togglePause() {
-    if (!state.gameRunning) return;
+    if (!state.gameRunning || state.gameOver) return;
 
     state.isPaused = !state.isPaused;
 
@@ -102,18 +113,9 @@ function togglePause() {
         document.exitPointerLock();
     } else {
         pauseScreen.classList.add('hidden');
-        container.requestPointerLock();
-        lastTime = performance.now();
+        if (!state.isPointerLocked) container.requestPointerLock();
     }
 }
-
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' || e.key === 'p') {
-        if (state.gameRunning && gameOverScreen.classList.contains('hidden')) {
-            togglePause();
-        }
-    }
-});
 
 function animate(currentTime) {
     requestAnimationFrame(animate);
@@ -219,4 +221,20 @@ function showGameOver() {
         localStorage.setItem('spaceSnake3DHighScore', state.score);
         document.getElementById('high-score').textContent = state.score.toString().padStart(4, '0');
     }
+}
+
+function exitToMenu() {
+    state.gameRunning = false;
+    state.isPaused = false;
+    state.gameOver = false;
+
+    clearEffects(state, scene);
+    resetVisuals(scene);
+
+    pauseScreen.classList.add('hidden');
+    gameOverScreen.classList.add('hidden');
+
+    startScreen.classList.remove('hidden');
+
+    document.exitPointerLock();
 }

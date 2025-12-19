@@ -1,7 +1,6 @@
 import { GRID_SIZE, MAX_FOOD, MAX_BLACK_HOLES, RARE_FRUIT_CHANCE, GREEN_FRUIT_CHANCE } from './constants.js';
 
 export function updateLogic(state) {
-    // Capture state BEFORE any modifications for interpolation
     if (!state.previousSnake) state.previousSnake = [];
 
     while (state.previousSnake.length < state.snake.length) state.previousSnake.push({});
@@ -125,12 +124,10 @@ export function updateLogic(state) {
                 }
             }
 
-            // Recalculate distance after magnetism pull for collision detection
             let ndx = rf.x - head.x;
             let ndy = rf.y - head.y;
             let ndz = rf.z - head.z;
 
-            // Wrap distance for toroidal space
             if (Math.abs(ndx) > GRID_SIZE / 2) ndx -= Math.sign(ndx) * GRID_SIZE;
             if (Math.abs(ndy) > GRID_SIZE / 2) ndy -= Math.sign(ndy) * GRID_SIZE;
             if (Math.abs(ndz) > GRID_SIZE / 2) ndz -= Math.sign(ndz) * GRID_SIZE;
@@ -749,7 +746,6 @@ function updateBlackHoles(state) {
                     const force = 40.0 / (dist + 5.0);
                     seg.x += (dx / dist) * force * 2.0; seg.y += (dy / dist) * force * 2.0; seg.z += (dz / dist) * force * 2.0;
 
-                    // Apply Damage
                     if (dist < 40 && state.snake.length > 5) {
                         if (Math.random() < 0.3) {
                             state.snake.pop();
