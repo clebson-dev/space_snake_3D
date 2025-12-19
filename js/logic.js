@@ -469,6 +469,7 @@ function updateBlackHoles(state) {
             state.events.push({ type: 'PORTAL_SPAWN', pos: { x: GRID_SIZE, y: bh.y, z: bh.z }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
         } else if (bh.x >= GRID_SIZE) {
             bh.x -= GRID_SIZE;
+            const color = bh.isCannibal ? 0xFFD700 : 0xFFFFFF;
             state.events.push({ type: 'PORTAL_SPAWN', pos: { x: GRID_SIZE, y: bh.y, z: bh.z }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
             state.events.push({ type: 'PORTAL_SPAWN', pos: { x: 0, y: bh.y, z: bh.z }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
         }
@@ -480,6 +481,7 @@ function updateBlackHoles(state) {
             state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: GRID_SIZE, z: bh.z }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
         } else if (bh.y >= GRID_SIZE) {
             bh.y -= GRID_SIZE;
+            const color = bh.isCannibal ? 0xFFD700 : 0xFFFFFF;
             state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: GRID_SIZE, z: bh.z }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
             state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: 0, z: bh.z }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
         }
@@ -491,6 +493,7 @@ function updateBlackHoles(state) {
             state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: bh.y, z: GRID_SIZE }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
         } else if (bh.z >= GRID_SIZE) {
             bh.z -= GRID_SIZE;
+            const color = bh.isCannibal ? 0xFFD700 : 0xFFFFFF;
             state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: bh.y, z: GRID_SIZE }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
             state.events.push({ type: 'PORTAL_SPAWN', pos: { x: bh.x, y: bh.y, z: 0 }, dir: bh.moveDir, color: color, isCannibal: bh.isCannibal, size: bh.size });
         }

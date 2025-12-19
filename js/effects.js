@@ -272,9 +272,9 @@ function updatePortalOrientation(mesh, vel) {
     mesh.rotation.set(0, 0, 0);
 
     if (vel.x !== 0) {
-        mesh.rotation.y = Math.PI / 2;
-    } else if (vel.y !== 0) {
         mesh.rotation.x = Math.PI / 2;
+    } else if (vel.y !== 0) {
+        mesh.rotation.y = Math.PI / 2;
     } else if (vel.z !== 0) {
     }
 }
