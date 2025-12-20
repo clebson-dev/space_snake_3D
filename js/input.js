@@ -252,7 +252,7 @@ function updateJoystickSteering(state) {
 
     const sensitivity = 0.003;
     state.camera.yaw -= dx * sensitivity;
-    state.camera.pitch -= dy * sensitivity;
+    state.camera.pitch += dy * sensitivity;
 
     const pitchLimit = Math.PI / 2 - 0.1;
     state.camera.pitch = Math.max(-pitchLimit, Math.min(pitchLimit, state.camera.pitch));
