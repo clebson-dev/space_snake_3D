@@ -16,7 +16,7 @@ export function initInput(state, container) {
 
         const sensitivity = 0.002;
         state.camera.yaw -= e.movementX * sensitivity;
-        state.camera.pitch -= e.movementY * sensitivity;
+        state.camera.pitch += e.movementY * sensitivity;
 
         const pitchLimit = Math.PI / 2 - 0.1;
         state.camera.pitch = Math.max(-pitchLimit, Math.min(pitchLimit, state.camera.pitch));
