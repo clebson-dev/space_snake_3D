@@ -5,6 +5,8 @@ export const MAX_FOOD = 1500;
 export const MAX_BLACK_HOLES = 100;
 export const RARE_FRUIT_CHANCE = 0.01;
 export const GREEN_FRUIT_CHANCE = 0.003;
+export const MAX_NPCS = 20;
+
 
 import * as THREE from 'three';
 
@@ -39,6 +41,13 @@ export const MATERIALS = {
         emissiveIntensity: 0.8,
         roughness: 0.3,
         metalness: 0.4
+    }),
+    npc: new THREE.MeshStandardMaterial({
+        color: 0xff4400,
+        emissive: 0xff2200,
+        emissiveIntensity: 0.6,
+        roughness: 0.2,
+        metalness: 0.8
     })
 };
 

@@ -1,5 +1,4 @@
 import { GRID_SIZE, TILE_SIZE, MATERIALS } from './constants.js';
-import { updateEffects } from './effects.js';
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -7,14 +6,12 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 
 export let scene, camera, renderer, composer;
 let snakeMeshes = [];
-let foodMeshes = [];
-let particlesMeshes = [];
-let cometMeshes = [];
 let solarSystem;
 let activeRareMesh = null;
 let activeGreenMesh = null;
 let foodMeshMap = {};
 let blackHoleMeshMap = {};
+let npcMeshMap = {};
 
 const _tempVec = new THREE.Vector3();
 
@@ -38,6 +35,10 @@ export function resetVisuals(scene) {
     if (blackHoleMeshMap) {
         Object.values(blackHoleMeshMap).forEach(mesh => scene.remove(mesh));
         blackHoleMeshMap = {};
+    }
+    if (npcMeshMap) {
+        Object.values(npcMeshMap).forEach(mesh => scene.remove(mesh));
+        npcMeshMap = {};
     }
 }
 
@@ -164,7 +165,6 @@ function createSolarSystem() {
 export function syncVisuals(state, alpha) {
     if (!state) return;
 
-    // 1. Manage Snake Mesh Pool
     while (snakeMeshes.length < state.snake.length) {
         const mesh = createSnakeBody(0, 0, 0);
         scene.add(mesh);
@@ -175,34 +175,28 @@ export function syncVisuals(state, alpha) {
         scene.remove(mesh);
     }
 
-    // 2. Update Snake Segments with Interpolation
     for (let i = 0; i < state.snake.length; i++) {
         const curr = state.snake[i];
-        // If segment didn't exist in prev frame (growth), start from curr (no lerp)
         const prev = state.previousSnake[i] || curr;
         const mesh = snakeMeshes[i];
 
-        // Material Update
         if (i === 0) {
             if (mesh.material !== MATERIALS.snakeHead) mesh.material = MATERIALS.snakeHead;
         } else {
             if (mesh.material !== MATERIALS.snake) mesh.material = MATERIALS.snake;
         }
 
-        // Warp Detection: If distance is too large, don't lerp across the universe
         const distSq = (curr.x - prev.x) ** 2 + (curr.y - prev.y) ** 2 + (curr.z - prev.z) ** 2;
 
-        if (distSq > 4) { // Threshold > 2 tiles implies wrap
+        if (distSq > 4) {
             mesh.position.set(curr.x * TILE_SIZE, curr.y * TILE_SIZE, curr.z * TILE_SIZE);
         } else {
-            // Linear Interpolation: prev + (curr - prev) * alpha
             const lx = prev.x + (curr.x - prev.x) * alpha;
             const ly = prev.y + (curr.y - prev.y) * alpha;
             const lz = prev.z + (curr.z - prev.z) * alpha;
             mesh.position.set(lx * TILE_SIZE, ly * TILE_SIZE, lz * TILE_SIZE);
         }
 
-        // Breathing Effect for Head
         if (i === 0) {
             const pulse = state.isAttracting ? (1.0 + Math.sin(Date.now() * 0.02) * 0.3) : 1.0;
             mesh.scale.setScalar(pulse);
@@ -211,11 +205,10 @@ export function syncVisuals(state, alpha) {
 
     syncFoodVisuals(state);
     syncBlackHoles(state);
+    syncNPCVisuals(state, alpha);
 
-    // Background Rotation
     if (solarSystem) solarSystem.rotation.y += 0.0005;
 
-    // Camera Follow
     updateCamera(state);
 }
 
@@ -232,13 +225,11 @@ function syncFoodVisuals(state) {
         }
         unseenIds.delete(f.id.toString());
 
-        // Animate/Position Food
         const mesh = foodMeshMap[f.id];
         const tx = f.x * TILE_SIZE;
         const ty = f.y * TILE_SIZE;
         const tz = f.z * TILE_SIZE;
 
-        // Simple lerp to smooth drift (avoid jump)
         _tempVec.set(tx, ty, tz);
         mesh.position.lerp(_tempVec, 0.2);
 
@@ -246,11 +237,9 @@ function syncFoodVisuals(state) {
         mesh.rotation.z += 0.02;
     });
 
-    // Rare & Green Fruits 
     if (state.rareFood) {
         syncRareFood(state);
     } else if (activeRareMesh) {
-        // Cleanup rare fruit mesh when collected
         scene.remove(activeRareMesh);
         activeRareMesh = null;
     }
@@ -258,7 +247,6 @@ function syncFoodVisuals(state) {
     if (state.greenFruit) {
         syncGreenFood(state);
     } else if (activeGreenMesh) {
-        // Cleanup green fruit mesh when collected
         scene.remove(activeGreenMesh);
         activeGreenMesh = null;
     }
@@ -272,13 +260,11 @@ function syncFoodVisuals(state) {
 
 function syncRareFood(state) {
     if (!state.rareFood.mesh) {
-        // Create mesh if not exists
         const geo = new THREE.SphereGeometry(0.8, 16, 16);
         const mat = MATERIALS.golden;
         state.rareFood.mesh = new THREE.Mesh(geo, mat);
         scene.add(state.rareFood.mesh);
-        activeRareMesh = state.rareFood.mesh; // Track for cleanup
-        // Set initial pos
+        activeRareMesh = state.rareFood.mesh;
         state.rareFood.mesh.position.set(state.rareFood.x * TILE_SIZE, state.rareFood.y * TILE_SIZE, state.rareFood.z * TILE_SIZE);
     }
     const tx = state.rareFood.x * TILE_SIZE;
@@ -298,7 +284,7 @@ function syncGreenFood(state) {
         const mat = MATERIALS.greenFruit;
         state.greenFruit.mesh = new THREE.Mesh(geo, mat);
         scene.add(state.greenFruit.mesh);
-        activeGreenMesh = state.greenFruit.mesh; // Track for cleanup
+        activeGreenMesh = state.greenFruit.mesh;
         state.greenFruit.mesh.position.set(state.greenFruit.x * TILE_SIZE, state.greenFruit.y * TILE_SIZE, state.greenFruit.z * TILE_SIZE);
     }
     const tx = state.greenFruit.x * TILE_SIZE;
@@ -326,7 +312,6 @@ function syncBlackHoles(state) {
             mesh = createBlackHoleMesh(bh);
             scene.add(mesh);
             blackHoleMeshMap[bh.id] = mesh;
-            // Set initial pos to avoid fly-in
             mesh.position.set(bh.x * TILE_SIZE, bh.y * TILE_SIZE, bh.z * TILE_SIZE);
         }
 
@@ -334,8 +319,6 @@ function syncBlackHoles(state) {
         const ty = bh.y * TILE_SIZE;
         const tz = bh.z * TILE_SIZE;
 
-        // Wrap detection for Black Holes?
-        // Basic check to prevent cross-map lerp
         const distSq = (mesh.position.x - tx) ** 2 + (mesh.position.y - ty) ** 2 + (mesh.position.z - tz) ** 2;
 
         if (distSq > (GRID_SIZE / 2 * TILE_SIZE) ** 2) {
@@ -363,31 +346,23 @@ function syncBlackHoles(state) {
 function updateCamera(state) {
     if (!snakeMeshes.length) return;
 
-    // Target Calculation
     const headPos = snakeMeshes[0].position;
 
-    // Desired Camera Position (Spherical Orbit relative to Head)
     const dist = state.camera.dist || 30;
     const yaw = state.camera.yaw || 0;
     const pitch = state.camera.pitch || 0.5;
 
-    // Camera Offset
     const offY = Math.sin(pitch) * dist;
     const hDist = Math.cos(pitch) * dist;
-    // Note: Use standard Trig for Orbit (X = sin, Z = cos) or consistent with Input logic
-    // Input Logic (Inverted): Forward = +Z.
-    // So looking at +Z (Snake Head), we want to be at -Z (Behind).
-    // Let's stick to standard math:
     const offX = Math.sin(yaw) * hDist;
     const offZ = Math.cos(yaw) * hDist;
 
     const targetPos = new THREE.Vector3(
-        headPos.x - offX, // Orbit X
-        headPos.y + offY, // Orbit Y
-        headPos.z - offZ  // Orbit Z (Behind if yaw=0)
+        headPos.x - offX,
+        headPos.y + offY,
+        headPos.z - offZ
     );
 
-    // Warp Handling
     if (state.camera.warp && state.camera.warp.active) {
         state.camera.warp.progress += 0.02;
         if (state.camera.warp.progress >= 1.0) {
@@ -395,23 +370,18 @@ function updateCamera(state) {
             state.camera.warp.startPos = null;
             camera.position.copy(targetPos);
         } else {
-            // Warp Interpolation
             if (!state.camera.warp.startPos) state.camera.warp.startPos = camera.position.clone();
             const t = state.camera.warp.progress;
-            const ease = t * t * (3 - 2 * t); // SmoothStep
+            const ease = t * t * (3 - 2 * t);
             camera.position.lerpVectors(state.camera.warp.startPos, targetPos, ease);
         }
     } else {
-        // Spring Damping (Smooth Follow)
-        // 0.1 is very smooth/lazy. 0.3 is snappy.
-        // Let's go with 0.15 for a balance.
         const smoothness = 0.15;
         camera.position.lerp(targetPos, smoothness);
     }
 
     camera.lookAt(headPos);
 
-    // Shake
     if (state.camera.shake > 0) {
         camera.position.x += (Math.random() - 0.5) * state.camera.shake;
         camera.position.y += (Math.random() - 0.5) * state.camera.shake;
@@ -420,17 +390,13 @@ function updateCamera(state) {
     }
 }
 
-// Helpers
 function createBlackHoleMesh(bh) {
     const mesh = new THREE.Group();
-    // Core
     const core = new THREE.Mesh(new THREE.SphereGeometry(0.5, 32, 32), new THREE.MeshBasicMaterial({ color: 0x000000 }));
     mesh.add(core);
-    // Ring
     const ring = new THREE.Mesh(new THREE.TorusGeometry(0.8, 0.1, 16, 32), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }));
     ring.rotation.x = Math.PI / 2;
     mesh.add(ring);
-    // Halo
     const halo = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.05, 16, 32), new THREE.MeshBasicMaterial({ color: 0xaaaaaa, transparent: true, opacity: 0.5 }));
     halo.rotation.x = Math.PI / 3;
     mesh.add(halo);
@@ -464,9 +430,72 @@ function createSnakeBody(x, y, z) {
     return mesh;
 }
 
+const sharedSphereGeo = new THREE.SphereGeometry(0.5, 8, 8);
 function createSphere(x, y, z, mat) {
-    const geo = new THREE.SphereGeometry(0.5, 16, 16);
-    const mesh = new THREE.Mesh(geo, mat);
+    const mesh = new THREE.Mesh(sharedSphereGeo, mat);
     mesh.position.set(x * TILE_SIZE, y * TILE_SIZE, z * TILE_SIZE);
     return mesh;
+}
+
+function syncNPCVisuals(state, alpha) {
+    if (!npcMeshMap) npcMeshMap = {};
+    const unseenIds = new Set(Object.keys(npcMeshMap));
+
+    state.npcSnakes.forEach(npc => {
+        unseenIds.delete(npc.id);
+
+        let snakeGroup = npcMeshMap[npc.id];
+        if (!snakeGroup) {
+            snakeGroup = new THREE.Group();
+            scene.add(snakeGroup);
+            npcMeshMap[npc.id] = snakeGroup;
+        }
+
+        let mat = MATERIALS.npc;
+        if (npc.color) {
+            if (!snakeGroup.userData.material) {
+                snakeGroup.userData.material = MATERIALS.npc.clone();
+                snakeGroup.userData.material.color.setHex(npc.color);
+                snakeGroup.userData.material.emissive.setHex(npc.color);
+            }
+            mat = snakeGroup.userData.material;
+        }
+
+        while (snakeGroup.children.length < npc.segments.length) {
+            const mesh = createSphere(0, 0, 0, mat);
+            snakeGroup.add(mesh);
+        }
+        while (snakeGroup.children.length > npc.segments.length) {
+            snakeGroup.remove(snakeGroup.children[snakeGroup.children.length - 1]);
+        }
+
+        for (let i = 0; i < npc.segments.length; i++) {
+            const curr = npc.segments[i];
+            const prev = (npc.previousSegments && npc.previousSegments[i]) ? npc.previousSegments[i] : curr;
+            const mesh = snakeGroup.children[i];
+
+            if (i === 0) {
+                mesh.scale.setScalar(1.2);
+            } else {
+                mesh.scale.setScalar(0.8);
+            }
+
+            const distSq = (curr.x - prev.x) ** 2 + (curr.y - prev.y) ** 2 + (curr.z - prev.z) ** 2;
+
+            if (distSq > 4) {
+                mesh.position.set(curr.x * TILE_SIZE, curr.y * TILE_SIZE, curr.z * TILE_SIZE);
+            } else {
+                const lx = prev.x + (curr.x - prev.x) * alpha;
+                const ly = prev.y + (curr.y - prev.y) * alpha;
+                const lz = prev.z + (curr.z - prev.z) * alpha;
+                mesh.position.set(lx * TILE_SIZE, ly * TILE_SIZE, lz * TILE_SIZE);
+            }
+        }
+    });
+
+    unseenIds.forEach(id => {
+        const group = npcMeshMap[id];
+        scene.remove(group);
+        delete npcMeshMap[id];
+    });
 }

@@ -48,7 +48,9 @@ function startGame() {
     state.isBoosting = false;
     state.boostEnergy = state.maxBoostEnergy;
     state.rareFood = null;
+    state.rareFood = null;
     state.predictedPortals = { entry: null, exit: null };
+    state.npcSnakes = [];
 
     if (!state.camera) state.camera = {};
     state.camera.yaw = 0;

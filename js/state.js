@@ -6,6 +6,7 @@ export function createInitialState() {
         nextVelocity: { x: 0, y: 0, z: 0 },
         foods: [],
         score: 0,
+        npcSnakes: [],
         highScore: parseInt(localStorage.getItem('spaceSnake3DHighScore') || '0'),
         gameRunning: false,
         isPaused: false,

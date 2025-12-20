@@ -1,31 +1,41 @@
 import { GRID_SIZE, TILE_SIZE } from './constants.js';
 import * as THREE from 'three';
 
+const particlePool = [];
+const MAX_POOL_SIZE = 500;
+
+function getParticleFromPool(geo, mat) {
+    let p = particlePool.pop();
+    if (!p) {
+        p = new THREE.Mesh(geo, mat);
+    } else {
+        p.geometry = geo;
+        p.material = mat;
+        p.scale.setScalar(1.0);
+        p.rotation.set(0, 0, 0);
+        p.visible = true;
+    }
+    return p;
+}
+
+function returnParticleToPool(mesh) {
+    if (particlePool.length < MAX_POOL_SIZE) {
+        mesh.visible = false;
+        mesh.removeFromParent();
+        particlePool.push(mesh);
+    } else {
+        mesh.removeFromParent();
+    }
+}
+
 export function clearEffects(state, scene) {
     if (!state) return;
 
     if (state.particles) {
         state.particles.forEach(p => {
-            if (p.mesh) scene.remove(p.mesh);
+            if (p.mesh) returnParticleToPool(p.mesh);
         });
         state.particles = [];
-    }
-
-    if (state.comets) {
-        state.comets.forEach(c => {
-            if (c.mesh) scene.remove(c.mesh);
-        });
-        state.comets = [];
-    }
-
-    if (state.predictedPortals) {
-        if (state.predictedPortals.entry && state.predictedPortals.entry.mesh) {
-            scene.remove(state.predictedPortals.entry.mesh);
-        }
-        if (state.predictedPortals.exit && state.predictedPortals.exit.mesh) {
-            scene.remove(state.predictedPortals.exit.mesh);
-        }
-        state.predictedPortals = { entry: null, exit: null };
     }
 }
 
@@ -124,6 +134,48 @@ function updateParticles(state, scene) {
         if (p.life <= 0 || (p.isPortal && p.mesh && p.mesh.material.opacity <= 0)) {
             if (p.mesh) scene.remove(p.mesh);
             state.particles.splice(i, 1);
+        } else if (p.isPortal && !p.isPredictive) {
+            let keptAlive = false;
+            const threshold = 1.5 * TILE_SIZE;
+
+            for (let j = 0; j < state.snake.length; j++) {
+                const s = state.snake[j];
+                const dx = s.x * TILE_SIZE - p.mesh.position.x;
+                const dy = s.y * TILE_SIZE - p.mesh.position.y;
+                const dz = s.z * TILE_SIZE - p.mesh.position.z;
+                if (Math.abs(dx) < threshold && Math.abs(dy) < threshold && Math.abs(dx) < threshold) {
+                    if (dx * dx + dy * dy + dz * dz < threshold * threshold) {
+                        keptAlive = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!keptAlive) {
+                for (let k = 0; k < state.npcSnakes.length; k++) {
+                    const npc = state.npcSnakes[k];
+                    if (npc.dead) continue;
+                    for (let j = 0; j < npc.segments.length; j++) {
+                        const s = npc.segments[j];
+                        const dx = s.x * TILE_SIZE - p.mesh.position.x;
+                        const dy = s.y * TILE_SIZE - p.mesh.position.y;
+                        const dz = s.z * TILE_SIZE - p.mesh.position.z;
+                        if (Math.abs(dx) < threshold && Math.abs(dy) < threshold && Math.abs(dz) < threshold) {
+                            if (dx * dx + dy * dy + dz * dz < threshold * threshold) {
+                                keptAlive = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (keptAlive) break;
+                }
+            }
+
+            if (keptAlive) {
+                p.life = 2.0;
+                if (p.mesh.material.opacity < 0.8) p.mesh.material.opacity = 0.8;
+                p.mesh.rotation.z += 0.2;
+            }
         }
     }
 }
@@ -310,7 +362,7 @@ function createPortalEffect(pos, color, predictive, scene, state, orientation, s
     const portal = {
         mesh: mesh,
         vx: 0, vy: 0, vz: 0,
-        life: predictive ? 999 : 4.0,
+        life: predictive ? 999 : 2.0,
         isPortal: true,
         isPredictive: predictive,
         isCannibal: isCannibal

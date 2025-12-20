@@ -1,4 +1,4 @@
-import { GRID_SIZE, MAX_FOOD, MAX_BLACK_HOLES, RARE_FRUIT_CHANCE, GREEN_FRUIT_CHANCE } from './constants.js';
+import { GRID_SIZE, MAX_FOOD, MAX_BLACK_HOLES, RARE_FRUIT_CHANCE, GREEN_FRUIT_CHANCE, MAX_NPCS } from './constants.js';
 
 export function updateLogic(state) {
     if (!state.previousSnake) state.previousSnake = [];
@@ -160,6 +160,17 @@ export function updateLogic(state) {
     }
 
     updateBlackHoles(state);
+    if (state.gameOver) {
+        return { gameOver: true, crashPos: state.crashPos };
+    }
+
+    state.npcSnakes = state.npcSnakes.filter(npc => !npc.dead);
+    if (state.npcSnakes.length < MAX_NPCS) {
+        spawnNPC(state);
+    }
+    updateNPCs(state);
+    checkNPCCollisions(state);
+
     if (state.gameOver) {
         return { gameOver: true, crashPos: state.crashPos };
     }
@@ -758,6 +769,466 @@ function updateBlackHoles(state) {
                     }
                 }
             });
+
+            state.npcSnakes.forEach(npc => {
+                if (npc.dead) return;
+                npc.segments.forEach(seg => {
+                    let dx = seg.x - bh.x; let dy = seg.y - bh.y; let dz = seg.z - bh.z;
+                    const distSq = dx * dx + dy * dy + dz * dz;
+                    if (distSq < 4900) {
+                        const dist = Math.sqrt(distSq);
+                        const force = 40.0 / (dist + 5.0);
+                        seg.x += (dx / dist) * force * 2.0; seg.y += (dy / dist) * force * 2.0; seg.z += (dz / dist) * force * 2.0;
+                    }
+                });
+
+                let dx = npc.segments[0].x - bh.x;
+                let dy = npc.segments[0].y - bh.y;
+                let dz = npc.segments[0].z - bh.z;
+                const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                if (dist < 15) {
+                    npc.dead = true;
+                    state.events.push({ type: 'EXPLOSION', x: npc.segments[0].x, y: npc.segments[0].y, z: npc.segments[0].z, color: npc.color });
+                }
+            });
+        }
+    }
+
+    state.blackHoles.forEach(bh => {
+        if (bh.expired) return;
+        state.npcSnakes.forEach(npc => {
+            if (npc.dead) return;
+            const head = npc.segments[0];
+
+            let dx = bh.x - head.x;
+            let dy = bh.y - head.y;
+            let dz = bh.z - head.z;
+
+            if (Math.abs(dx) > GRID_SIZE / 2) dx -= Math.sign(dx) * GRID_SIZE;
+            if (Math.abs(dy) > GRID_SIZE / 2) dy -= Math.sign(dy) * GRID_SIZE;
+            if (Math.abs(dz) > GRID_SIZE / 2) dz -= Math.sign(dz) * GRID_SIZE;
+
+            const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+            if (dist < 10 * bh.size) {
+                let pullStrength = 0.1 + (bh.size * 0.05);
+                if (dist < 5.0) pullStrength *= 1.5;
+                if (dist < 2.5) pullStrength *= 2;
+
+                head.x -= dx * pullStrength;
+                head.y -= dy * pullStrength;
+                head.z -= dz * pullStrength;
+
+                if (head.x < 0) head.x += GRID_SIZE;
+                if (head.x >= GRID_SIZE) head.x -= GRID_SIZE;
+                if (head.y < 0) head.y += GRID_SIZE;
+                if (head.y >= GRID_SIZE) head.y -= GRID_SIZE;
+                if (head.z < 0) head.z += GRID_SIZE;
+                if (head.z >= GRID_SIZE) head.z -= GRID_SIZE;
+            }
+
+            if (dist < 1.5 * bh.size) {
+                npc.dead = true;
+                bh.expired = true;
+                state.events.push({
+                    type: 'EXPLOSION',
+                    x: head.x, y: head.y, z: head.z,
+                    color: npc.color
+                });
+                state.events.push({
+                    type: 'EXPLOSION',
+                    x: bh.x, y: bh.y, z: bh.z,
+                    color: 0x000000
+                });
+            }
+        });
+    });
+}
+
+function spawnNPC(state) {
+    let valid = false;
+    let head;
+
+    for (let i = 0; i < 50; i++) {
+        const x = Math.floor(Math.random() * GRID_SIZE);
+        const y = Math.floor(Math.random() * GRID_SIZE);
+        const z = Math.floor(Math.random() * GRID_SIZE);
+
+        if (isSafeSpawn(state, x, y, z)) {
+            head = { x, y, z };
+            valid = true;
+            break;
+        }
+    }
+
+    if (!valid) {
+        head = {
+            x: Math.floor(Math.random() * GRID_SIZE),
+            y: Math.floor(Math.random() * GRID_SIZE),
+            z: Math.floor(Math.random() * GRID_SIZE)
+        };
+    }
+
+    const id = Math.random().toString(36).substr(2, 9);
+
+    const dirs = [
+        { x: 1, y: 0, z: 0 }, { x: -1, y: 0, z: 0 },
+        { x: 0, y: 1, z: 0 }, { x: 0, y: -1, z: 0 },
+        { x: 0, y: 0, z: 1 }, { x: 0, y: 0, z: -1 }
+    ];
+    let dir = dirs[Math.floor(Math.random() * dirs.length)];
+
+    const segments = [];
+    const len = 5 + Math.floor(Math.random() * 6);
+
+    let cx = head.x, cy = head.y, cz = head.z;
+    let odx = -dir.x;
+    let ody = -dir.y;
+    let odz = -dir.z;
+
+    let bodySafe = true;
+
+    for (let k = 0; k < len; k++) {
+        if (!isSafeSpawn(state, cx, cy, cz)) {
+            bodySafe = false;
+            break;
+        }
+
+        segments.push({ x: cx, y: cy, z: cz });
+        cx += odx;
+        cy += ody;
+        cz += odz;
+
+        if (cx < 0) cx = GRID_SIZE - 1;
+        else if (cx >= GRID_SIZE) cx = 0;
+        if (cy < 0) cy = GRID_SIZE - 1;
+        else if (cy >= GRID_SIZE) cy = 0;
+        if (cz < 0) cz = GRID_SIZE - 1;
+        else if (cz >= GRID_SIZE) cz = 0;
+    }
+
+    if (!bodySafe) {
+        return;
+    }
+
+    const hue = Math.random();
+    const sat = 0.8 + Math.random() * 0.2;
+    const lit = 0.4 + Math.random() * 0.2;
+    const colors = [
+        0xff0000, 0xff4400, 0xff8800, 0xffff00,
+        0x00ff00, 0x00ff88, 0x00ffff, 0x0088ff,
+        0x0000ff, 0x8800ff, 0xff00ff, 0xff0088
+    ];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+
+    state.npcSnakes.push({
+        id,
+        segments,
+        previousSegments: JSON.parse(JSON.stringify(segments)),
+        dir,
+        dead: false,
+        pendingGrowth: 0,
+        moveAccumulator: 0,
+        speedMultiplier: 0.8 + Math.random() * 0.4,
+        color: color
+    });
+}
+
+function isSafeSpawn(state, x, y, z) {
+    for (let s of state.snake) if (s.x === x && s.y === y && s.z === z) return false;
+    for (let npc of state.npcSnakes) {
+        for (let s of npc.segments) if (s.x === x && s.y === y && s.z === z) return false;
+    }
+    for (let bh of state.blackHoles) {
+        const dist = Math.abs(x - bh.x) + Math.abs(y - bh.y) + Math.abs(z - bh.z);
+        if (dist < bh.size * 2 + 5) return false;
+    }
+    return true;
+}
+
+function updateNPCs(state) {
+    for (const npc of state.npcSnakes) {
+        if (!npc.previousSegments) npc.previousSegments = [];
+        while (npc.previousSegments.length < npc.segments.length) npc.previousSegments.push({});
+        while (npc.previousSegments.length > npc.segments.length) npc.previousSegments.pop();
+        for (let i = 0; i < npc.segments.length; i++) {
+            npc.previousSegments[i] = { ...npc.segments[i] };
+        }
+
+
+        let bestDir = getBestDirection(state, npc);
+        npc.dir = bestDir;
+
+        const head = npc.segments[0];
+        let nx = head.x + npc.dir.x;
+        let ny = head.y + npc.dir.y;
+        let nz = head.z + npc.dir.z;
+
+        if (nx < 0) {
+            nx = GRID_SIZE - 1;
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: 0, y: ny, z: nz }, orientation: 'x', color: npc.color });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: GRID_SIZE, y: ny, z: nz }, orientation: 'x', color: npc.color });
+        }
+        else if (nx >= GRID_SIZE) {
+            nx = 0;
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: GRID_SIZE, y: ny, z: nz }, orientation: 'x', color: npc.color });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: 0, y: ny, z: nz }, orientation: 'x', color: npc.color });
+        }
+
+        if (ny < 0) {
+            ny = GRID_SIZE - 1;
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: nx, y: 0, z: nz }, orientation: 'y', color: npc.color });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: nx, y: GRID_SIZE, z: nz }, orientation: 'y', color: npc.color });
+        }
+        else if (ny >= GRID_SIZE) {
+            ny = 0;
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: nx, y: GRID_SIZE, z: nz }, orientation: 'y', color: npc.color });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: nx, y: 0, z: nz }, orientation: 'y', color: npc.color });
+        }
+
+        if (nz < 0) {
+            nz = GRID_SIZE - 1;
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: nx, y: ny, z: 0 }, orientation: 'z', color: npc.color });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: nx, y: ny, z: GRID_SIZE }, orientation: 'z', color: npc.color });
+        }
+        else if (nz >= GRID_SIZE) {
+            nz = 0;
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: nx, y: ny, z: GRID_SIZE }, orientation: 'z', color: npc.color });
+            state.events.push({ type: 'PORTAL_SPAWN', pos: { x: nx, y: ny, z: 0 }, orientation: 'z', color: npc.color });
+        }
+
+        npc.segments.unshift({ x: nx, y: ny, z: nz });
+
+        if (npc.pendingGrowth > 0) {
+            npc.pendingGrowth--;
+        } else {
+            npc.segments.pop();
+        }
+    }
+}
+
+function getBestDirection(state, npc) {
+    const head = npc.segments[0];
+    const moves = [
+        { x: 1, y: 0, z: 0 }, { x: -1, y: 0, z: 0 },
+        { x: 0, y: 1, z: 0 }, { x: 0, y: -1, z: 0 },
+        { x: 0, y: 0, z: 1 }, { x: 0, y: 0, z: -1 }
+    ];
+
+    let bestScore = -Infinity;
+    let bestMoves = [];
+
+    for (const move of moves) {
+        if (move.x === -npc.dir.x && move.y === -npc.dir.y && move.z === -npc.dir.z) continue;
+
+        let score = 0;
+
+        let tx = head.x + move.x;
+        let ty = head.y + move.y;
+        let tz = head.z + move.z;
+
+        if (tx < 0) tx = GRID_SIZE - 1;
+        else if (tx >= GRID_SIZE) tx = 0;
+        if (ty < 0) ty = GRID_SIZE - 1;
+        else if (ty >= GRID_SIZE) ty = 0;
+        if (tz < 0) tz = GRID_SIZE - 1;
+        else if (tz >= GRID_SIZE) tz = 0;
+
+        if (!isSafePos(state, tx, ty, tz, npc.id)) {
+            score = -10000;
+        } else {
+            let closestFoodDist = Infinity;
+
+
+            for (const f of state.foods) {
+                if (Math.abs(f.x - tx) + Math.abs(f.y - ty) + Math.abs(f.z - tz) > 60) continue;
+
+                let d = distSq(tx, ty, tz, f.x, f.y, f.z);
+                if (d < closestFoodDist) closestFoodDist = d;
+            }
+
+            if (closestFoodDist < 2500) {
+                score += (5000 / (closestFoodDist + 100));
+            }
+
+            if (move.x === npc.dir.x && move.y === npc.dir.y && move.z === npc.dir.z) {
+                score += 2.0;
+            }
+
+            score += Math.random() * 4.0;
+        }
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestMoves = [move];
+        } else if (Math.abs(score - bestScore) < 0.1) {
+            bestMoves.push(move);
+        }
+    }
+
+    if (bestMoves.length > 0) {
+        return bestMoves[Math.floor(Math.random() * bestMoves.length)];
+    }
+
+    return npc.dir;
+}
+
+function isSafePos(state, x, y, z, myId) {
+    for (const s of state.snake) {
+        if (s.x === x && s.y === y && s.z === z) return false;
+    }
+
+    for (const npc of state.npcSnakes) {
+        if (npc.id !== myId) {
+            for (const s of npc.segments) {
+                if (s.x === x && s.y === y && s.z === z) return false;
+            }
+        } else {
+            for (const s of npc.segments) {
+                if (s.x === x && s.y === y && s.z === z) return false;
+            }
+        }
+    }
+
+    for (const bh of state.blackHoles) {
+        const dist = Math.sqrt((x - bh.x) ** 2 + (y - bh.y) ** 2 + (z - bh.z) ** 2);
+        if (dist < bh.size * 1.5) return false;
+    }
+
+    return true;
+}
+
+function distSq(x1, y1, z1, x2, y2, z2) {
+    return (x1 - x2) ** 2 + (y1 - y2) ** 2 + (z1 - z2) ** 2;
+}
+
+function checkNPCCollisions(state) {
+    const playerHead = state.snake[0];
+
+    for (const npc of state.npcSnakes) {
+        for (const seg of npc.segments) {
+            const dx = playerHead.x - seg.x;
+            const dy = playerHead.y - seg.y;
+            const dz = playerHead.z - seg.z;
+            if (dx * dx + dy * dy + dz * dz < 0.64) {
+                state.gameOver = true;
+                state.crashPos = { ...playerHead };
+                return;
+            }
+        }
+
+        const npcHead = npc.segments[0];
+        for (const seg of state.snake) {
+            const dx = npcHead.x - seg.x;
+            const dy = npcHead.y - seg.y;
+            const dz = npcHead.z - seg.z;
+            if (dx * dx + dy * dy + dz * dz < 0.64) {
+                npc.dead = true;
+                state.score += 500;
+                state.events.push({
+                    type: 'EXPLOSION',
+                    x: npcHead.x, y: npcHead.y, z: npcHead.z,
+                    color: npc.color || 0xff4400
+                });
+                break;
+            }
+        }
+    }
+
+    const magnetRange = 10;
+    const eatRadius = 1.0;
+
+    for (const npc of state.npcSnakes) {
+        if (npc.dead) continue;
+        const head = npc.segments[0];
+
+        for (const f of state.foods) {
+            if (f.eaten) continue;
+
+            let dx = f.x - head.x;
+            let dy = f.y - head.y;
+            let dz = f.z - head.z;
+
+            if (Math.abs(dx) > GRID_SIZE / 2) dx -= Math.sign(dx) * GRID_SIZE;
+            if (Math.abs(dy) > GRID_SIZE / 2) dy -= Math.sign(dy) * GRID_SIZE;
+            if (Math.abs(dz) > GRID_SIZE / 2) dz -= Math.sign(dz) * GRID_SIZE;
+
+            let distSq = dx * dx + dy * dy + dz * dz;
+
+            if (distSq < magnetRange * magnetRange) {
+
+                let pullStrength = 0.3;
+                if (distSq < 25.0) pullStrength = 0.6;
+                if (distSq < 6.25) pullStrength = 0.9;
+
+                f.x -= dx * pullStrength;
+                f.y -= dy * pullStrength;
+                f.z -= dz * pullStrength;
+
+                if (f.x < 0) f.x += GRID_SIZE;
+                if (f.x >= GRID_SIZE) f.x -= GRID_SIZE;
+                if (f.y < 0) f.y += GRID_SIZE;
+                if (f.y >= GRID_SIZE) f.y -= GRID_SIZE;
+                if (f.z < 0) f.z += GRID_SIZE;
+                if (f.z >= GRID_SIZE) f.z -= GRID_SIZE;
+
+                let ndx = f.x - head.x;
+                let ndy = f.y - head.y;
+                let ndz = f.z - head.z;
+                if (Math.abs(ndx) > GRID_SIZE / 2) ndx -= Math.sign(ndx) * GRID_SIZE;
+                if (Math.abs(ndy) > GRID_SIZE / 2) ndy -= Math.sign(ndy) * GRID_SIZE;
+                if (Math.abs(ndz) > GRID_SIZE / 2) ndz -= Math.sign(ndz) * GRID_SIZE;
+                distSq = ndx * ndx + ndy * ndy + ndz * ndz;
+            }
+
+            if (distSq < eatRadius * eatRadius) {
+                f.eaten = true;
+                npc.pendingGrowth++;
+                state.events.push({
+                    type: 'EXPLOSION',
+                    x: f.x, y: f.y, z: f.z,
+                    color: 0xff0055,
+                    size: 0.5
+                });
+            }
+        }
+    }
+
+    for (let i = 0; i < state.npcSnakes.length; i++) {
+        const npc1 = state.npcSnakes[i];
+        if (npc1.dead) continue;
+        const head1 = npc1.segments[0];
+
+        for (let k = 4; k < npc1.segments.length; k++) {
+            const s = npc1.segments[k];
+            if (Math.abs(head1.x - s.x) < 0.8 && Math.abs(head1.y - s.y) < 0.8 && Math.abs(head1.z - s.z) < 0.8) {
+                npc1.dead = true;
+                state.events.push({ type: 'EXPLOSION', x: head1.x, y: head1.y, z: head1.z, color: npc1.color });
+                break;
+            }
+        }
+        if (npc1.dead) continue;
+
+        for (let j = 0; j < state.npcSnakes.length; j++) {
+            if (i === j) continue;
+            const npc2 = state.npcSnakes[j];
+            if (npc2.dead) continue;
+
+            const head2 = npc2.segments[0];
+            if (Math.abs(head1.x - head2.x) < 0.8 && Math.abs(head1.y - head2.y) < 0.8 && Math.abs(head1.z - head2.z) < 0.8) {
+                npc1.dead = true;
+                npc2.dead = true;
+                state.events.push({ type: 'EXPLOSION', x: head1.x, y: head1.y, z: head1.z, color: 0xffffff });
+                continue;
+            }
+
+            for (const s of npc2.segments) {
+                if (Math.abs(head1.x - s.x) < 0.8 && Math.abs(head1.y - s.y) < 0.8 && Math.abs(head1.z - s.z) < 0.8) {
+                    npc1.dead = true;
+                    state.events.push({ type: 'EXPLOSION', x: head1.x, y: head1.y, z: head1.z, color: npc1.color });
+                    break;
+                }
+            }
         }
     }
 }
