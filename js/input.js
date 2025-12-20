@@ -324,7 +324,7 @@ export function updateMobileControlsVisibility(state) {
     const mobileControls = document.getElementById('mobile-controls');
     if (!mobileControls) return;
 
-    if (state.gameRunning && !state.isPaused && !state.gameOver) {
+    if (state.isTouchDevice && state.gameRunning && !state.isPaused && !state.gameOver) {
         mobileControls.style.display = 'block';
     } else {
         mobileControls.style.display = 'none';
