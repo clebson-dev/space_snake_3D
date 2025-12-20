@@ -477,6 +477,8 @@ canvas {
     box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
     min-width: 70px;
     text-align: center;
+    display: flex;
+    justify-content: space-between;
 }
 
 #mobile-controls {
@@ -665,10 +667,6 @@ canvas {
 
 .mobile-only {
     display: none;
-}
-
-.desktop-only {
-    display: block;
 }
 
 @media (max-width: 480px) and (pointer: coarse) {
