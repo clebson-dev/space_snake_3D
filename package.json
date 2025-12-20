@@ -8,7 +8,13 @@
     "build": "vite build",
     "preview": "vite preview"
   },
-  "keywords": ["game", "3d", "snake", "threejs", "webgl"],
+  "keywords": [
+    "game",
+    "3d",
+    "snake",
+    "threejs",
+    "webgl"
+  ],
   "author": "clebson-dev",
   "license": "MIT",
   "dependencies": {

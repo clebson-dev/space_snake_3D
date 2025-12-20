@@ -1,6 +1,6 @@
 import { createInitialState } from './js/state.js';
 import { initGraphics, syncVisuals, scene, camera, renderer, composer, resetVisuals } from './js/graphics.js';
-import { initInput, updateMouseSteering } from './js/input.js';
+import { initInput, updateMouseSteering, updateMobileControlsVisibility } from './js/input.js';
 import { updateLogic } from './js/logic.js';
 import { updateEffects, triggerWarpEffect, createExplosion, clearEffects } from './js/effects.js';
 import { GRID_SIZE } from './js/constants.js';
@@ -27,6 +27,7 @@ const TIME_STEP = 100;
 initGraphics(container);
 initInput(state, container);
 initLocalization();
+updateMobileControlsVisibility(state);
 
 function startGame() {
     clearEffects(state, scene);
@@ -86,6 +87,8 @@ function startGame() {
         requestAnimationFrame(animate);
         state.isAnimateRunning = true;
     }
+
+    updateMobileControlsVisibility(state);
 }
 
 startBtn.addEventListener('click', startGame);
@@ -115,6 +118,7 @@ function togglePause() {
         pauseScreen.classList.add('hidden');
         if (!state.isPointerLocked) container.requestPointerLock();
     }
+    updateMobileControlsVisibility(state);
 }
 
 function animate(currentTime) {
@@ -221,6 +225,7 @@ function showGameOver() {
         localStorage.setItem('spaceSnake3DHighScore', state.score);
         document.getElementById('high-score').textContent = state.score.toString().padStart(4, '0');
     }
+    updateMobileControlsVisibility(state);
 }
 
 function exitToMenu() {
@@ -237,4 +242,5 @@ function exitToMenu() {
     startScreen.classList.remove('hidden');
 
     document.exitPointerLock();
+    updateMobileControlsVisibility(state);
 }
