@@ -65,53 +65,68 @@
     </div>
 
     <div id="start-screen" class="overlay">
-        <div class="lang-selector">
-            <button class="lang-btn" data-lang="pt">PT</button>
-            <button class="lang-btn" data-lang="en">EN</button>
-            <button class="lang-btn" data-lang="es">ES</button>
-        </div>
-        <header>
-            <h1>SPACE SNAKE 3D</h1>
-            <p class="subtitle" data-i18n="subtitle">DIMENSIONAL DRIFTER</p>
-        </header>
-        <h2 data-i18n="ready_pilot">READY PILOT?</h2>
-
-        <div class="features-grid">
-            <div class="info-box">
-                <h3 data-i18n="mission_obj_title">MISSION OBJECTIVES</h3>
-                <ul class="rules-list">
-                    <li data-i18n="obj_pink">Eat <span class="highlight-pink"> PINK </span> energy to grow.
-                    </li>
-                    <li data-i18n="obj_golden">Hunt rare <span class="highlight-golden"> GOLDEN </span> energy for speed
-                        bonus.</li>
-                    <li data-i18n="obj_green">Seek <span class="highlight-green"> GREEN </span> fruit for huge growth!
-                    </li>
-                    <li data-i18n="obj_blackhole">Avoid <span class="highlight-void"> BLACK HOLES </span> - they consume
-                        all.</li>
-                </ul>
+        <div class="glass-card">
+            <div class="lang-selector">
+                <button class="lang-btn" data-lang="pt">PT</button>
+                <button class="lang-btn" data-lang="en">EN</button>
+                <button class="lang-btn" data-lang="es">ES</button>
             </div>
 
-            <div class="info-box">
-                <h3 data-i18n="flight_controls_title">FLIGHT CONTROLS</h3>
-                <div class="control-row"><span class="key-badge">MOUSE</span> <span data-i18n="control_mouse">Steer
-                        Snake</span></div>
-                <div class="control-row"><span class="key-badge">SPACE</span> <span data-i18n="control_space">Boost
-                        Speed</span></div>
-                <div class="control-row"><span class="key-badge">SHIFT</span> <span data-i18n="control_shift">Free
-                        Look</span></div>
-                <div class="control-row"><span class="key-badge">SCROLL</span> <span data-i18n="control_scroll">Zoom
-                        Cam</span></div>
+            <header>
+                <h1>SPACE SNAKE 3D</h1>
+                <p class="subtitle" data-i18n="subtitle">DIMENSIONAL DRIFTER</p>
+            </header>
+
+            <h2 data-i18n="ready_pilot">READY PILOT?</h2>
+
+            <button id="start-btn" class="glow-button" data-i18n="btn_launch">LAUNCH MISSION</button>
+
+            <div class="features-grid">
+                <div class="info-box">
+                    <h3 data-i18n="mission_obj_title">MISSION OBJECTIVES</h3>
+                    <ul class="rules-list">
+                        <li data-i18n="obj_pink">Eat <span class="highlight-pink"> PINK </span> energy to grow.</li>
+                        <li data-i18n="obj_golden">Hunt rare <span class="highlight-golden"> GOLDEN </span> energy for
+                            speed bonus.</li>
+                        <li data-i18n="obj_green">Seek <span class="highlight-green"> GREEN </span> fruit for huge
+                            growth!</li>
+                        <li data-i18n="obj_blackhole">Avoid <span class="highlight-void"> BLACK HOLES </span> - they
+                            consume all.</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h3 data-i18n="flight_controls_title">FLIGHT CONTROLS</h3>
+                    <div class="control-row desktop-only"><span class="key-badge">MOUSE</span> <span
+                            data-i18n="control_mouse">Steer Snake</span></div>
+                    <div class="control-row desktop-only"><span class="key-badge">SPACE</span> <span
+                            data-i18n="control_space">Boost Speed</span></div>
+                    <div class="control-row desktop-only"><span class="key-badge">SHIFT</span> <span
+                            data-i18n="control_shift">Free Look</span></div>
+                    <div class="control-row desktop-only"><span class="key-badge">SCROLL</span> <span
+                            data-i18n="control_scroll">Zoom Cam</span></div>
+
+                    <div class="mobile-only">
+                        <div class="control-row"><span class="key-badge" data-i18n="control_lstick">L. STICK</span>
+                            <span data-i18n="control_lstick_desc">Look / Steer</span>
+                        </div>
+                        <div class="control-row"><span class="key-badge" data-i18n="control_btn">BTN</span> <span
+                                data-i18n="control_space">Boost Speed</span></div>
+                        <div class="control-row"><span class="key-badge" data-i18n="control_drag">DRAG</span> <span
+                                data-i18n="control_drag_desc">Free Look</span></div>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <button id="start-btn" class="glow-button" data-i18n="btn_launch">LAUNCH MISSION</button>
     </div>
 
     <div id="pause-screen" class="overlay hidden">
-        <h2 data-i18n="system_paused">SYSTEM PAUSED</h2>
-        <button id="resume-btn" class="glow-button" data-i18n="btn_resume">RESUME MISSION</button>
-        <button id="pause-restart-btn" class="glow-button danger" data-i18n="btn_abort">ABORT & RESTART</button>
-        <button id="pause-exit-btn" class="glow-button danger" data-i18n="btn_exit_menu">EXIT TO MENU</button>
+        <div class="glass-card">
+            <h2 data-i18n="system_paused">SYSTEM PAUSED</h2>
+            <button id="resume-btn" class="glow-button" data-i18n="btn_resume">RESUME MISSION</button>
+            <button id="pause-restart-btn" class="glow-button danger" data-i18n="btn_abort">ABORT & RESTART</button>
+            <button id="pause-exit-btn" class="glow-button danger" data-i18n="btn_exit_menu">EXIT TO MENU</button>
+        </div>
     </div>
 
     <div id="game-over-screen" class="overlay hidden">

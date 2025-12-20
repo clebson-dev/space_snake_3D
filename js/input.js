@@ -38,7 +38,6 @@ export function initInput(state, container) {
             state.isSpacePressed = true;
         }
 
-        handleSteering(e.key, state);
     });
 
     document.addEventListener('keyup', (e) => {
@@ -212,44 +211,6 @@ function updateJoystickVisuals(knob) {
     }
 
     knob.style.transform = `translate(${dx}px, ${dy}px)`;
-}
-
-function handleSteering(key, state) {
-    const fX = -Math.sin(state.camera.yaw);
-    const fZ = -Math.cos(state.camera.yaw);
-
-    let moveDir = { x: 0, z: 0 };
-    if (Math.abs(fX) > Math.abs(fZ)) {
-        moveDir = { x: Math.sign(fX), z: 0 };
-    } else {
-        moveDir = { x: 0, z: Math.sign(fZ) };
-    }
-
-    const rightDir = { x: moveDir.z, z: -moveDir.x };
-    let nextDir = null;
-
-    switch (key) {
-        case 'ArrowUp':
-        case 'w':
-            nextDir = { x: moveDir.x, y: 0, z: moveDir.z };
-            break;
-        case 'ArrowDown':
-        case 's':
-            nextDir = { x: -moveDir.x, y: 0, z: -moveDir.z };
-            break;
-        case 'ArrowLeft':
-        case 'a':
-            nextDir = { x: -rightDir.x, y: 0, z: -rightDir.z };
-            break;
-        case 'ArrowRight':
-        case 'd':
-            nextDir = { x: rightDir.x, y: 0, z: rightDir.z };
-            break;
-    }
-
-    if (nextDir) {
-        state.nextVelocity = nextDir;
-    }
 }
 
 export function updateMouseSteering(state, cameraObject) {
